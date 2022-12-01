@@ -22,7 +22,8 @@ Future<String?> signUp(
   return 'Something went wrong, please try again later';
 }
 
-Future<String?> login({required String email, required String password}) async {
+Future<String?> loginAccount(
+    {required String email, required String password}) async {
   try {
     final UserCredential credential = await FirebaseAuth.instance
         .signInWithEmailAndPassword(email: email, password: password);
@@ -39,7 +40,7 @@ Future<String?> login({required String email, required String password}) async {
   return 'Something went wrong, please try again later';
 }
 
-Future<void> logout(BuildContext context) async {
+Future<void> logoutAccount(BuildContext context) async {
   await FirebaseAuth.instance.signOut().then((value) =>
       Navigator.of(context).pushNamedAndRemoveUntil("/", (route) => false));
 }

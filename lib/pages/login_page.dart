@@ -24,13 +24,14 @@ class LoginPageState extends State<LoginPage> {
 
   final ValueNotifier<bool> isSubmitting = ValueNotifier<bool>(false);
 
-  Future<bool> loginAccount() async {
+  Future<bool> login() async {
     FocusManager.instance.primaryFocus!.unfocus();
     errorMessage.value = '';
     if (_formKey.currentState!.validate()) {
       isSubmitting.value = true;
       FocusManager.instance.primaryFocus!.unfocus();
-      String? result = await login(email: email.text, password: password.text);
+      String? result =
+          await loginAccount(email: email.text, password: password.text);
       isSubmitting.value = false;
       if (result != null) {
         errorMessage.value = result;
@@ -124,7 +125,7 @@ class LoginPageState extends State<LoginPage> {
                               FilteringTextInputFormatter.deny(RegExp(r' '))
                             ],
                             onFieldSubmitted: (value) async {
-                              if (!submitting && await loginAccount()) {
+                              if (!submitting && await login()) {
                                 Navigator.pushNamedAndRemoveUntil(
                                     context,
                                     '/home',
@@ -145,44 +146,45 @@ class LoginPageState extends State<LoginPage> {
                   alignment: Alignment.center,
                   child: ValueListenableBuilder<bool>(
                       valueListenable: isSubmitting,
-                      builder: ((context, bool submitting, child) =>
-                          ElevatedButton(
-                            style: ButtonStyle(
-                                foregroundColor:
-                                    MaterialStateProperty.all(Colors.white),
-                                textStyle: MaterialStateProperty.resolveWith(
-                                    (states) =>
-                                        states.contains(MaterialState.pressed)
-                                            ? const TextStyle(
-                                                fontSize: 19,
-                                                fontWeight: FontWeight.w300,
-                                                letterSpacing: 2.5)
-                                            : const TextStyle(
-                                                fontSize: 22,
-                                                fontWeight: FontWeight.w600,
-                                                letterSpacing: 2.5)),
-                                padding: MaterialStateProperty.all<EdgeInsets>(
-                                    const EdgeInsets.symmetric(
-                                        horizontal: 20, vertical: 10)),
-                                enableFeedback: submitting ? false : true,
-                                backgroundColor:
-                                    MaterialStateProperty.resolveWith((states) =>
-                                        submitting ? disabledButtonColor : appColor)),
-                            onPressed: submitting
-                                ? null
-                                : () async {
-                                    if (!submitting && await loginAccount()) {
-                                      Navigator.pushNamedAndRemoveUntil(
-                                          context,
-                                          '/home',
-                                          (route) =>
-                                              route.settings.name == '/');
-                                    }
-                                  },
-                            child: Text(
-                              submitting ? "Loading..." : "Login",
-                            ),
-                          ))),
+                      builder:
+                          ((context, bool submitting, child) => ElevatedButton(
+                                style: ButtonStyle(
+                                    foregroundColor:
+                                        MaterialStateProperty.all(Colors.white),
+                                    textStyle: MaterialStateProperty.resolveWith(
+                                        (states) =>
+                                            states.contains(MaterialState.pressed)
+                                                ? const TextStyle(
+                                                    fontSize: 19,
+                                                    fontWeight: FontWeight.w300,
+                                                    letterSpacing: 2.5)
+                                                : const TextStyle(
+                                                    fontSize: 22,
+                                                    fontWeight: FontWeight.w600,
+                                                    letterSpacing: 2.5)),
+                                    padding:
+                                        MaterialStateProperty.all<EdgeInsets>(
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 20, vertical: 10)),
+                                    enableFeedback: submitting ? false : true,
+                                    backgroundColor:
+                                        MaterialStateProperty.resolveWith(
+                                            (states) => submitting ? disabledButtonColor : appColor)),
+                                onPressed: submitting
+                                    ? null
+                                    : () async {
+                                        if (!submitting && await login()) {
+                                          Navigator.pushNamedAndRemoveUntil(
+                                              context,
+                                              '/home',
+                                              (route) =>
+                                                  route.settings.name == '/');
+                                        }
+                                      },
+                                child: Text(
+                                  submitting ? "Loading..." : "Login",
+                                ),
+                              ))),
                 ),
                 Center(
                   child: Padding(

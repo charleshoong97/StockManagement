@@ -1,2 +1,2 @@
-const itemPath = "/items";
-const categoryPath = "/categories";
+const itemPath = "/items/";
+const categoryPath = "/categories/";

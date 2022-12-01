@@ -38,7 +38,8 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
               onPressed: () async {
-                logout(context);
+                logoutAccount(context);
+                Provider.of<Store>(context, listen: false).resetAll();
               },
               icon: const Icon(Icons.logout))
         ],

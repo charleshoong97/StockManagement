@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:inventory/constants/firebase.dart';
 import 'package:inventory/constants/variables.dart';
@@ -13,10 +14,16 @@ class Store with ChangeNotifier {
 
   List<ItemCategory> get categories => _categories;
 
+  void resetAll() {
+    _inventories = [];
+    _categories = [];
+  }
+
   Future<bool> fetchCategory() async {
     try {
       print("----- Fetch Category -----");
-      var result = await readData(path: categoryPath);
+      var result = await readData(
+          path: '$categoryPath${FirebaseAuth.instance.currentUser!.uid}');
       if (result != null) {
         _categories.clear();
         Map<String, dynamic>.from(result).forEach((key, value) {
@@ -38,7 +45,8 @@ class Store with ChangeNotifier {
   Future<bool> fetchInventory() async {
     try {
       print("----- Fetch Inventory -----");
-      var result = await readData(path: itemPath);
+      var result = await readData(
+          path: '$itemPath${FirebaseAuth.instance.currentUser!.uid}');
       if (result != null) {
         _inventories.clear();
         Map<String, dynamic>.from(result).forEach((key, value) {
@@ -65,9 +73,8 @@ class Store with ChangeNotifier {
     if (await writeNewObjectData(data: {
       category: item.category.id,
       addedDate: item.addedDate.toString()
-    }, path: itemPath)) {
+    }, path: '$itemPath${FirebaseAuth.instance.currentUser!.uid}')) {
       await fetchInventory();
-      notifyListeners();
     }
   }
 
@@ -76,7 +83,7 @@ class Store with ChangeNotifier {
       barcode: category.barcode,
       label: category.label,
       description: category.description
-    }, path: categoryPath)) {
+    }, path: '$categoryPath${FirebaseAuth.instance.currentUser!.uid}')) {
       await fetchCategory();
       notifyListeners();
     }
@@ -87,7 +94,9 @@ class Store with ChangeNotifier {
       required String param,
       required String value}) async {
     if (await writeSpecificExistData(
-        data: value, path: '$categoryPath/$id/$param')) {
+        data: value,
+        path:
+            '$categoryPath${FirebaseAuth.instance.currentUser!.uid}/$id/$param')) {
       _categories.forEach((e) {
         if (e.id == id) {
           switch (param) {
@@ -169,7 +178,8 @@ class Store with ChangeNotifier {
     print("----- Dispose Item ${disposeItem.id} -----");
     if (await writeSpecificNewData(
         data: {disposeDate: currDateTime.toString()},
-        path: '$itemPath/${disposeItem.id}')) {
+        path:
+            '$itemPath${FirebaseAuth.instance.currentUser!.uid}/${disposeItem.id}')) {
       await fetchInventory();
       Item item =
           _inventories.firstWhere((matched) => matched.id == disposeItem.id);
