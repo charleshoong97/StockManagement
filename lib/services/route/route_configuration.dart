@@ -4,9 +4,11 @@ import 'package:inventory/pages/not_found_page.dart';
 import 'package:inventory/pages/category_details_page.dart';
 import 'package:inventory/pages/home_page.dart';
 import 'package:inventory/pages/login_page.dart';
+import 'package:inventory/pages/reset_password_page.dart';
 import 'package:inventory/pages/signup_page.dart';
 import 'package:inventory/pages/splash_page.dart';
 import 'package:inventory/services/route/dynamic_routes/category_route.dart';
+import 'package:inventory/services/route/dynamic_routes/login_route.dart';
 import 'package:inventory/services/route/path.dart';
 
 class RouteConfiguration {
@@ -17,12 +19,16 @@ class RouteConfiguration {
   /// take priority.
   static List<NavigationPath> paths = [
     NavigationPath(
-      r'^' + LoginPage.route,
-      (context, match) => LoginPage(),
+      r'^' + LoginPage.route + r'(.*)$',
+      (context, match) => LoginRoute.getLoginEmailAddressFromSignUp(match),
     ),
     NavigationPath(
       r'^' + SignUpPage.route,
       (context, match) => SignUpPage(),
+    ),
+    NavigationPath(
+      r'^' + ResetPasswordPage.route,
+      (context, match) => ResetPasswordPage(),
     ),
     NavigationPath(
       r'^' + CategoryDetails.baseRoute + r'/([\w-]+)$',
@@ -47,19 +53,30 @@ class RouteConfiguration {
   /// [WidgetsApp.onGenerateRoute] to make use of the [paths] for route
   /// matching.
   static Route onGenerateRoute(RouteSettings settings) {
+    // debugPrint("Path Name : ${settings.name!}");
     if ((FirebaseAuth.instance.currentUser) == null &&
-        !["/", SignUpPage.route, LoginPage.route, NotFoundPage.route]
-            .contains(settings.name)) {
-      settings = settings.copyWith(name: "/login");
+        ![
+          "/",
+          SignUpPage.route,
+          LoginPage.route,
+          NotFoundPage.route,
+          ResetPasswordPage.route
+        ].contains(settings.name) &&
+        !RegExp(r'^' + LoginPage.route + r'(.*)$').hasMatch(settings.name!)) {
+      settings = settings.copyWith(name: LoginPage.route);
     }
 
     for (NavigationPath path in paths) {
+      // debugPrint("Pattern : ${path.pattern}");
       final regExpPattern = RegExp(path.pattern);
       if (regExpPattern.hasMatch(settings.name!)) {
+        // debugPrint("Match : ${path.pattern}");
+
         final firstMatch = regExpPattern.firstMatch(settings.name!);
         final match = (firstMatch != null && firstMatch.groupCount == 1)
             ? firstMatch.group(1)!
-            : '/';
+            : '';
+        // debugPrint("Value : $match");
         return MaterialPageRoute<void>(
           builder: (context) => path.builder(context, match),
           settings: settings,

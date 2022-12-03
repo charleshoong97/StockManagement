@@ -126,9 +126,11 @@ class _HomePageState extends State<HomePage> {
                         padding: const EdgeInsets.all(8.0),
                         child: TableRowInkWell(
                             onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) =>
-                                      CategoryDetails(id: element.id)));
+                              Navigator.of(context).pushNamed(
+                                  "${CategoryDetails.baseRoute}/${element.id}");
+                              // Navigator.of(context).push(MaterialPageRoute(
+                              //     builder: (context) =>
+                              //         CategoryDetails(id: element.id)));
                             },
                             child: Text(
                               element.label,

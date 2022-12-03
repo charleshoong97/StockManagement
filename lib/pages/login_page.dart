@@ -4,11 +4,15 @@ import 'package:inventory/constants/colors.dart';
 import 'package:inventory/constants/images.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:inventory/controllers/account_controller.dart';
+import 'package:inventory/pages/home_page.dart';
+import 'package:inventory/pages/reset_password_page.dart';
+import 'package:inventory/pages/signup_page.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({Key? key, this.emailAddress}) : super(key: key);
 
-  static const route = "/login";
+  static const route = "/login/";
+  final String? emailAddress;
 
   @override
   LoginPageState createState() => LoginPageState();
@@ -23,6 +27,14 @@ class LoginPageState extends State<LoginPage> {
   final ValueNotifier<String> errorMessage = ValueNotifier<String>("");
 
   final ValueNotifier<bool> isSubmitting = ValueNotifier<bool>(false);
+
+  @override
+  initState() {
+    super.initState();
+    if (widget.emailAddress != null) {
+      email.text = widget.emailAddress!;
+    }
+  }
 
   Future<bool> login() async {
     FocusManager.instance.primaryFocus!.unfocus();
@@ -125,10 +137,10 @@ class LoginPageState extends State<LoginPage> {
                               FilteringTextInputFormatter.deny(RegExp(r' '))
                             ],
                             onFieldSubmitted: (value) async {
-                              if (!submitting && await login()) {
+                              if (!submitting && await login() && mounted) {
                                 Navigator.pushNamedAndRemoveUntil(
                                     context,
-                                    '/home',
+                                    HomePage.route,
                                     (route) => route.settings.name == '/');
                               }
                             },
@@ -141,6 +153,23 @@ class LoginPageState extends State<LoginPage> {
                               return null;
                             },
                           ))),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, ResetPasswordPage.route);
+                      },
+                      child: const Text(
+                        "Forget your password?",
+                        style: TextStyle(
+                          color: hyperlinkColor,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
                 Align(
                   alignment: Alignment.center,
@@ -173,10 +202,12 @@ class LoginPageState extends State<LoginPage> {
                                 onPressed: submitting
                                     ? null
                                     : () async {
-                                        if (!submitting && await login()) {
+                                        if (!submitting &&
+                                            await login() &&
+                                            mounted) {
                                           Navigator.pushNamedAndRemoveUntil(
                                               context,
-                                              '/home',
+                                              HomePage.route,
                                               (route) =>
                                                   route.settings.name == '/');
                                         }
@@ -211,7 +242,7 @@ class LoginPageState extends State<LoginPage> {
                     TextButton(
                         onPressed: () async {
                           FocusManager.instance.primaryFocus!.unfocus();
-                          await Navigator.pushNamed(context, '/signup');
+                          await Navigator.pushNamed(context, SignUpPage.route);
                           _formKey.currentState!.reset();
                         },
                         style: ButtonStyle(

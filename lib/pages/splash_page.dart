@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:inventory/constants/colors.dart';
 import 'package:inventory/constants/images.dart';
+import 'package:inventory/pages/home_page.dart';
 import 'package:inventory/pages/login_page.dart';
 
 class SplashPage extends StatefulWidget {
@@ -38,10 +39,11 @@ class SplashPageState extends State<SplashPage> {
 
   Future<void> checkCredential(BuildContext context) async {
     Future.delayed(const Duration(seconds: 1)).then((value) {
-      if (FirebaseAuth.instance.currentUser != null) {
-        Navigator.of(context).pushReplacementNamed("/home");
+      if (FirebaseAuth.instance.currentUser != null &&
+          FirebaseAuth.instance.currentUser!.emailVerified) {
+        Navigator.of(context).pushReplacementNamed(HomePage.route);
       } else {
-        Navigator.of(context).pushReplacementNamed("/login");
+        Navigator.of(context).pushReplacementNamed(LoginPage.route);
       }
     });
   }

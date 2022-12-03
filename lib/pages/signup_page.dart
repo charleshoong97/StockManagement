@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:inventory/constants/colors.dart';
 import 'package:inventory/controllers/account_controller.dart';
+import 'package:inventory/pages/login_page.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
@@ -24,9 +25,11 @@ class SignUpPageState extends State<SignUpPage> {
 
   final ValueNotifier<String> errorMessage = ValueNotifier<String>("");
   final ValueNotifier<bool> isSubmitting = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> isSuccess = ValueNotifier<bool>(false);
 
   Future<bool> signUpAccount() async {
     FocusManager.instance.primaryFocus!.unfocus();
+    isSuccess.value = false;
     errorMessage.value = '';
     if (_formKey.currentState!.validate()) {
       isSubmitting.value = true;
@@ -35,6 +38,9 @@ class SignUpPageState extends State<SignUpPage> {
       if (result != null) {
         errorMessage.value = result;
       } else {
+        FirebaseAuth.instance.signOut();
+        isSuccess.value = true;
+        await Future.delayed(const Duration(seconds: 6));
         return true;
       }
     }
@@ -149,10 +155,12 @@ class SignUpPageState extends State<SignUpPage> {
                               FilteringTextInputFormatter.deny(RegExp(r' '))
                             ],
                             onFieldSubmitted: (value) async {
-                              if (!submitting && await signUpAccount()) {
+                              if (!submitting &&
+                                  await signUpAccount() &&
+                                  mounted) {
                                 Navigator.pushNamedAndRemoveUntil(
                                     context,
-                                    '/home',
+                                    '${LoginPage.route}${email.text}',
                                     (route) => route.settings.name == '/');
                               }
                             },
@@ -170,44 +178,64 @@ class SignUpPageState extends State<SignUpPage> {
                   alignment: Alignment.center,
                   child: ValueListenableBuilder<bool>(
                       valueListenable: isSubmitting,
-                      builder: ((context, bool submitting, child) =>
-                          ElevatedButton(
-                            style: ButtonStyle(
-                                foregroundColor:
-                                    MaterialStateProperty.all(Colors.white),
-                                textStyle: MaterialStateProperty.resolveWith(
-                                    (states) =>
-                                        states.contains(MaterialState.pressed)
-                                            ? const TextStyle(
-                                                fontSize: 19,
-                                                fontWeight: FontWeight.w300,
-                                                letterSpacing: 2.5)
-                                            : const TextStyle(
-                                                fontSize: 22,
-                                                fontWeight: FontWeight.w600,
-                                                letterSpacing: 2.5)),
-                                padding: MaterialStateProperty.all<EdgeInsets>(
-                                    const EdgeInsets.symmetric(
-                                        horizontal: 20, vertical: 10)),
-                                enableFeedback: submitting ? false : true,
-                                backgroundColor:
-                                    MaterialStateProperty.resolveWith((states) =>
-                                        submitting ? disabledButtonColor : appColor)),
-                            onPressed: submitting
-                                ? null
-                                : () async {
-                                    if (!submitting && await signUpAccount()) {
-                                      Navigator.pushNamedAndRemoveUntil(
-                                          context,
-                                          '/home',
-                                          (route) =>
-                                              route.settings.name == '/');
-                                    }
-                                  },
-                            child: Text(
-                              submitting ? "Loading..." : "Register",
-                            ),
-                          ))),
+                      builder:
+                          ((context, bool submitting, child) => ElevatedButton(
+                                style: ButtonStyle(
+                                    foregroundColor:
+                                        MaterialStateProperty.all(Colors.white),
+                                    textStyle: MaterialStateProperty.resolveWith(
+                                        (states) =>
+                                            states.contains(MaterialState.pressed)
+                                                ? const TextStyle(
+                                                    fontSize: 19,
+                                                    fontWeight: FontWeight.w300,
+                                                    letterSpacing: 2.5)
+                                                : const TextStyle(
+                                                    fontSize: 22,
+                                                    fontWeight: FontWeight.w600,
+                                                    letterSpacing: 2.5)),
+                                    padding:
+                                        MaterialStateProperty.all<EdgeInsets>(
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 20, vertical: 10)),
+                                    enableFeedback: submitting ? false : true,
+                                    backgroundColor:
+                                        MaterialStateProperty.resolveWith(
+                                            (states) => submitting ? disabledButtonColor : appColor)),
+                                onPressed: submitting
+                                    ? null
+                                    : () async {
+                                        if (!submitting &&
+                                            await signUpAccount() &&
+                                            mounted) {
+                                          Navigator.pushNamedAndRemoveUntil(
+                                              context,
+                                              '${LoginPage.route}${email.text}',
+                                              (route) =>
+                                                  route.settings.name == '/');
+                                        }
+                                      },
+                                child: Text(
+                                  submitting ? "Loading..." : "Register",
+                                ),
+                              ))),
+                ),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: ValueListenableBuilder(
+                        valueListenable: isSuccess,
+                        builder: ((context, bool value, child) => Visibility(
+                              visible: value,
+                              child: const Text(
+                                "Sign Up Successfully.\nPlease check your inbox to verify your email address",
+                                style: TextStyle(
+                                    color: Colors.green,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700),
+                              ),
+                            ))),
+                  ),
                 ),
                 Center(
                   child: Padding(
